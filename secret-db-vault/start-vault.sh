@@ -15,5 +15,6 @@ docker run \
 	-e 'VAULT_ADDR=http://127.0.0.1:8200' \
 	-e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' \
 	-e 'VAULT_SKIP_VERIFY=true' \
+	-e 'VAULT_TOKEN=myroot' \
 	-e 'VAULT_LOG_LEVEL=debug' \
 	vault server -dev
