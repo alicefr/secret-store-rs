@@ -1,13 +1,11 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 #![feature(format_args_capture)]
-#![feature(env)]
 
 #[macro_use]
 extern crate rocket;
 #[macro_use]
 extern crate lazy_static;
 
-use futures::executor;
 use rocket::serde::json::{json, Json, Value};
 use rocket::serde::{Deserialize, Serialize};
 use std::error::Error;
@@ -45,7 +43,7 @@ impl SecretStore {
 
 pub async fn get_secret_from_vault() -> Secret {
     let store = read_secret_store();
-    let mut client = VaultClient::new(
+    let client = VaultClient::new(
         VaultClientSettingsBuilder::default()
             .address(store.url.clone())
             .token(store.token.clone())
@@ -113,7 +111,7 @@ fn get_secret_store() -> Json<SecretStore> {
 fn register_secret_store(store: Json<SecretStore>) -> Value {
     let valid = store.validate();
     match valid {
-        Ok(v) => {
+        Ok(_) => {
             write_secret_store(store.0);
             return json!({ "status": "updated"});
         }
