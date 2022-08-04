@@ -7,6 +7,7 @@ $  cat example/test.json
   "url": "http://127.0.0.1:8200",
   "path": "guestowner1/workload-id/secret"
 }
+$ cd example
 $ curl -H "Content-Type: application/json" \
 	-d  @test.json \
 	-X POST \
