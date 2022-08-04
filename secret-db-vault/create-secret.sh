@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 docker exec -ti vault vault kv put -mount=secret guestowner1/workload-id/secret password=test
 docker exec -ti vault vault kv get -mount=secret guestowner1/workload-id/secret
@@ -11,4 +11,5 @@ EOF
 '
 docker exec -ti vault vault policy write kbs readonly.hcl
 
-docker exec -ti vault vault token create -policy="kbs" -field=token > token-vault-kb
+VAULT_TOKEN=$(docker exec -ti vault vault token create -policy="kbs" -field=token)
+echo $VAULT_TOKEN
