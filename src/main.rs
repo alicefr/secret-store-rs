@@ -62,7 +62,7 @@ impl SecretStore {
     }
 }
 
-#[post("/secret-store", format = "json", data = "<store>")]
+#[post("/update", format = "json", data = "<store>")]
 fn register_secret_store(store: Json<SecretStore>) -> Value {
     let valid = store.validate();
     match valid {
@@ -79,5 +79,5 @@ fn register_secret_store(store: Json<SecretStore>) -> Value {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![register_secret_store])
+    rocket::build().mount("/secret-store", routes![register_secret_store])
 }
