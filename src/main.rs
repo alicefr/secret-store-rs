@@ -15,12 +15,22 @@ lazy_static! {
     static ref SECRET_STORE: RwLock<SecretStore> = RwLock::new(SecretStore::default());
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct SecretStore {
     url: String,
     token: String,
     path: String,
+}
+
+impl SecretStore {
+    fn new(s: &SecretStore) -> SecretStore {
+        SecretStore {
+            url: s.url.clone(),
+            token: s.token.clone(),
+            path: s.path.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -62,6 +72,12 @@ impl SecretStore {
     }
 }
 
+#[get("/get")]
+fn get_secret_store() -> Json<SecretStore> {
+    let store = SECRET_STORE.read().unwrap();
+    Json(SecretStore::new(&(*store)))
+}
+
 #[post("/update", format = "json", data = "<store>")]
 fn register_secret_store(store: Json<SecretStore>) -> Value {
     let valid = store.validate();
@@ -79,5 +95,8 @@ fn register_secret_store(store: Json<SecretStore>) -> Value {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/secret-store", routes![register_secret_store])
+    rocket::build().mount(
+        "/secret-store",
+        routes![register_secret_store, get_secret_store],
+    )
 }
