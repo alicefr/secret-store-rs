@@ -25,7 +25,6 @@ pub struct Secret {
 pub struct SecretStore {
     url: String,
     token: String,
-    path: String,
 }
 
 impl SecretStore {
@@ -33,12 +32,11 @@ impl SecretStore {
         SecretStore {
             url: s.url.clone(),
             token: s.token.clone(),
-            path: s.path.clone(),
         }
     }
 }
 
-pub async fn get_secret_from_vault() -> Secret {
+pub async fn get_secret_from_vault(path: &str) -> Secret {
     let store = read_secret_store();
     let client = VaultClient::new(
         VaultClientSettingsBuilder::default()
@@ -48,7 +46,7 @@ pub async fn get_secret_from_vault() -> Secret {
             .unwrap(),
     )
     .unwrap();
-    kv2::read(&client, "secret", &store.path).await.unwrap()
+    kv2::read(&client, "secret", path).await.unwrap()
 }
 
 #[derive(Debug, Clone)]
@@ -78,9 +76,7 @@ impl Error for InvalidSecretStoreError {
 
 impl SecretStore {
     fn validate(&self) -> Result<(), InvalidSecretStoreError> {
-        if self.path.is_empty() {
-            Err(InvalidSecretStoreError::new("secret path cannot be empty"))
-        } else if self.token.is_empty() {
+        if self.token.is_empty() {
             Err(InvalidSecretStoreError::new("token cannot be empty"))
         } else if self.url.is_empty() {
             Err(InvalidSecretStoreError::new("url cannot be empty"))
@@ -138,7 +134,6 @@ mod tests {
     fn set_secret_store() {
         let store = SecretStore {
             url: "http://127.0.0.1:8200".to_string(),
-            path: "guestowner1/workload-id/secret".to_string(),
             token: "sfjdksjfksjfkdjskfjskfjd".to_string(),
         };
         let serialized_store = serde_json::to_string(&store).unwrap();
@@ -165,10 +160,9 @@ mod tests {
         );
         write_secret_store(SecretStore {
             url: url.to_string(),
-            path: "guestowner1/workload-id/secret".to_string(),
             token: token.to_string(),
         });
-        let secret = get_secret_from_vault().await;
+        let secret = get_secret_from_vault("guestowner1/workload-id/secret").await;
         assert_eq!(secret.password, "test".to_string());
     }
 }
